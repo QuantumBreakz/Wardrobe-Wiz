@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 48 70% 96%;
+    --foreground: 230 40% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 230 45% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 45% 12%;
+
+    --primary: 226 70% 20%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 48 64% 88%;
+    --secondary-foreground: 230 40% 20%;
+
+    --muted: 48 50% 90%;
+    --muted-foreground: 230 25% 40%;
+
+    --accent: 44 95% 54%;
+    --accent-foreground: 0 0% 15%;
+
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 230 30% 80%;
+    --input: 230 30% 80%;
+    --ring: 226 70% 20%;
+
+    --radius: 0.75rem;
+
+    --hero-gradient: linear-gradient(135deg, hsl(226 65% 22%), hsl(44 95% 60%));
+    --card-shadow: 0 4px 16px -6px hsl(230 50% 30% / 0.2);
+    --card-shadow-hover: 0 18px 40px -18px hsl(44 80% 50% / 0.35);
+    
+    --sidebar-background: 30 25% 97%;
+    --sidebar-foreground: 30 8% 25%;
+    --sidebar-primary: 150 25% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 20% 92%;
+    --sidebar-accent-foreground: 30 8% 20%;
+    --sidebar-border: 30 15% 90%;
+    --sidebar-ring: 150 25% 45%;
+  }
+
+  .dark {
+    --background: 230 45% 6%;
+    --foreground: 48 70% 96%;
+
+    --card: 230 45% 8%;
+    --card-foreground: 48 70% 96%;
+
+    --popover: 230 45% 8%;
+    --popover-foreground: 48 70% 96%;
+
+    --primary: 44 95% 60%;
+    --primary-foreground: 230 45% 10%;
+
+    --secondary: 230 30% 14%;
+    --secondary-foreground: 48 70% 94%;
+
+    --muted: 230 30% 14%;
+    --muted-foreground: 48 40% 75%;
+
+    --accent: 44 95% 52%;
+    --accent-foreground: 230 45% 10%;
+
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 30 10% 95%;
+
+    --border: 230 30% 20%;
+    --input: 230 30% 20%;
+    --ring: 44 95% 60%;
+
+    --hero-gradient: linear-gradient(135deg, hsl(230 60% 12%), hsl(44 90% 45%));
+    --card-shadow: 0 4px 18px -8px hsl(0 0% 0% / 0.6);
+    --card-shadow-hover: 0 20px 40px -18px hsl(44 80% 50% / 0.35);
+    
+    --sidebar-background: 30 12% 10%;
+    --sidebar-foreground: 30 10% 90%;
+    --sidebar-primary: 150 30% 55%;
+    --sidebar-primary-foreground: 30 12% 8%;
+    --sidebar-accent: 30 10% 15%;
+    --sidebar-accent-foreground: 30 10% 90%;
+    --sidebar-border: 30 10% 18%;
+    --sidebar-ring: 150 30% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "kern" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  .hero-gradient {
+    background: var(--hero-gradient);
+  }
+
+  .hero-aurora {
+    position: absolute;
+    top: -20%;
+    left: -10%;
+    right: -10%;
+    height: 140%;
+    background: radial-gradient(circle at 20% 20%, hsla(226 70% 50% / 0.45), transparent 55%),
+      radial-gradient(circle at 80% 0%, hsla(44 95% 65% / 0.35), transparent 45%),
+      radial-gradient(circle at 50% 80%, hsla(210 70% 50% / 0.3), transparent 50%);
+    filter: blur(80px);
+    opacity: 0.9;
+    animation: heroAurora 16s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  
+  .card-shadow {
+    box-shadow: var(--card-shadow);
+  }
+  
+  .card-shadow-hover {
+    box-shadow: var(--card-shadow-hover);
+  }
+}
+
+@keyframes heroAurora {
+  0% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(20px) scale(0.95);
+    opacity: 0.8;
+  }
+}

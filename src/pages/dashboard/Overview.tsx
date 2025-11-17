@@ -1,0 +1,286 @@
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { UploadCloud, MessageSquare, Sparkles, ShoppingBag, Ruler, Wand2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const stats = [
+  { title: "Closet items", value: "127", description: "Digitized pieces ready to mix" },
+  { title: "Looks generated", value: "43", description: "Personalized outfit ideas" },
+  { title: "Favorites saved", value: "18", description: "Pinned combinations" },
+  { title: "Rewear boost", value: "42%", description: "More rotation vs. baseline" },
+];
+
+const wardrobeInspo = [
+  {
+    title: "Coastal Linen Set",
+    source: "unsplash.com/photos/ZHvM3XIOHoE",
+    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=500&q=80",
+  },
+  {
+    title: "Honey Knit",
+    source: "unsplash.com/photos/-uHVRvDr7pg",
+    image: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=500&q=80",
+  },
+  {
+    title: "Utility Shirt",
+    source: "unsplash.com/photos/8manzosRGPE",
+    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=500&q=80",
+  },
+  {
+    title: "Textured Loafers",
+    source: "unsplash.com/photos/1_CMoFsPfso",
+    image: "https://images.unsplash.com/photo-1483982258113-b72862e6cff6?auto=format&fit=crop&w=500&q=80",
+  },
+];
+
+const defaultProfile = {
+  height: `5'9"`,
+  weight: "72 kg",
+  collar: `15.5"`,
+  waist: `32"`,
+};
+
+const Overview = () => {
+  const [messages, setMessages] = useState([
+    { role: "bot", content: "Hi! Ask me anything about your closet or share a vibe you're going for." },
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const [uploadedItems, setUploadedItems] = useState<{ name: string; size: string }[]>([]);
+  const [profile, setProfile] = useState(defaultProfile);
+  const [outfitPrompt, setOutfitPrompt] = useState("Board meeting in humid weather");
+  const [outfitIdeas, setOutfitIdeas] = useState([
+    "Navy chore coat + breathable oxford + tapered chinos",
+    "Lightweight blazer + knit tee + loafers",
+  ]);
+
+  const handleChatSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+    const userMsg = { role: "user" as const, content: chatInput.trim() };
+    const botMsg = {
+      role: "bot" as const,
+      content: `On it! I'll search your wardrobe embeddings for: "${chatInput.trim()}". Expect a refreshed idea in the queue.`,
+    };
+    setMessages((prev) => [...prev, userMsg, botMsg]);
+    setChatInput("");
+  };
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setUploadedItems(
+      files.map((file) => ({
+        name: file.name,
+        size: `${(file.size / 1024).toFixed(1)} KB`,
+      })),
+    );
+  };
+
+  const handleProfileChange = (key: keyof typeof defaultProfile, value: string) => {
+    setProfile((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleOutfitSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!outfitPrompt.trim()) return;
+    setOutfitIdeas([
+      `Base: ${outfitPrompt}`,
+      "Layer with navy outerwear, add breathable knit, finish with textured footwear.",
+      "Accent with honey accessories or your favorite watch.",
+    ]);
+  };
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Wardrobe Command Center</h1>
+        <p className="text-muted-foreground mt-2">
+          Chat with WardrobeWiz, upload pieces, set fit details, and spin up personalized outfits.
+        </p>
+      </div>
+
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Card key={stat.title} className="shadow-card hover:shadow-card-hover transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-semibold text-foreground">{stat.value}</p>
+              <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2 shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-primary" />
+              Chat with WardrobeWiz (RAG)
+            </CardTitle>
+            <CardDescription>Ask for outfit riffs, care tips, or closet summaries.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="h-48 overflow-y-auto rounded-xl border border-border/60 bg-muted/30 p-4 space-y-3">
+              {messages.map((message, index) => (
+                <div
+                  key={`${message.role}-${index}`}
+                  className={cn(
+                    "rounded-2xl px-4 py-3 text-sm",
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground max-w-[80%] ml-auto"
+                      : "bg-white text-foreground max-w-[90%]",
+                  )}
+                >
+                  {message.content}
+                </div>
+              ))}
+            </div>
+            <form onSubmit={handleChatSubmit} className="flex gap-2">
+              <Input
+                placeholder="E.g. Need a smart-casual look for Karachi humidity"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+              />
+              <Button type="submit">Send</Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Ruler className="h-5 w-5 text-primary" />
+              Personal Fit Profile
+            </CardTitle>
+            <CardDescription>Set the measurements WardrobeWiz should remember.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {Object.entries(profile).map(([key, value]) => (
+              <div key={key} className="space-y-1">
+                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{key}</label>
+                <Input value={value} onChange={(e) => handleProfileChange(key as keyof typeof defaultProfile, e.target.value)} />
+              </div>
+            ))}
+            <Button variant="secondary" className="w-full">
+              Save profile
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UploadCloud className="h-5 w-5 text-primary" />
+              Wardrobe Customisation
+            </CardTitle>
+            <CardDescription>Drop new garments to keep your virtual closet updated.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-2xl border border-dashed border-primary/40 p-6 text-center bg-muted/30">
+              <Input type="file" multiple onChange={handleUpload} className="hidden" id="wardrobe-upload" />
+              <label htmlFor="wardrobe-upload" className="cursor-pointer flex flex-col items-center gap-2 text-sm text-muted-foreground">
+                <UploadCloud className="h-8 w-8 text-primary" />
+                <span>
+                  Click to upload or drag & drop. PNG, JPG up to 5MB.
+                </span>
+              </label>
+            </div>
+            {!uploadedItems.length ? (
+              <p className="text-sm text-muted-foreground">No uploads yet. Your last sync was 2 days ago.</p>
+            ) : (
+              <div className="space-y-2 text-sm">
+                {uploadedItems.map((item) => (
+                  <div key={item.name} className="flex items-center justify-between rounded-xl border border-border px-3 py-2">
+                    <span className="font-medium">{item.name}</span>
+                    <span className="text-muted-foreground">{item.size}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShoppingBag className="h-5 w-5 text-primary" />
+              Wardrobe Inspiration Feed
+            </CardTitle>
+            <CardDescription>Reference looks pulled from trusted catalogs.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {wardrobeInspo.map((item) => (
+                <div key={item.title} className="rounded-2xl border border-border overflow-hidden">
+                  <img src={item.image} alt={item.title} className="h-32 w-full object-cover" />
+                  <div className="p-3">
+                    <p className="text-sm font-semibold">{item.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{item.source}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-primary" />
+              Outfit Generator
+            </CardTitle>
+            <CardDescription>Type the scenario, get a curated combination.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleOutfitSubmit} className="space-y-3">
+              <Textarea value={outfitPrompt} onChange={(e) => setOutfitPrompt(e.target.value)} placeholder="E.g. Wedding welcome dinner in Lahore" />
+              <Button type="submit" className="w-full">
+                Generate outfit
+              </Button>
+            </form>
+            <div className="space-y-2">
+              {outfitIdeas.map((idea, idx) => (
+                <div key={idx} className="rounded-2xl border border-border px-3 py-2 text-sm">
+                  {idea}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Personalization Notes
+            </CardTitle>
+            <CardDescription>Track reminders that nudge the AI toward your vibe.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="rounded-2xl border border-border p-3">
+              Prefers breathable fabrics for humidity. Remind me to include at least one statement accessory.
+            </div>
+            <div className="rounded-2xl border border-border p-3">
+              Avoid wool layers during day events. Suggest loafers or sneakers over dress shoes when the commute is longer than 1 km.
+            </div>
+            <div className="rounded-2xl border border-border p-3">
+              Palette favorites: navy, honey, off-white. Avoid neon except for gym looks.
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Overview;
