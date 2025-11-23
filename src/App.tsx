@@ -5,12 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/components/routing/ProtectedRoute";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Overview from "./pages/dashboard/Overview";
 import Wardrobe from "./pages/dashboard/Wardrobe";
+import WardrobeUpload from "./pages/dashboard/WardrobeUpload";
 import Recommend from "./pages/dashboard/Recommend";
 import Outfits from "./pages/dashboard/Outfits";
 import Analytics from "./pages/dashboard/Analytics";
@@ -36,13 +38,14 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <AuthProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
+  <ErrorBoundary>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -72,6 +75,7 @@ const App = () => (
             >
               <Route index element={<Overview />} />
               <Route path="wardrobe" element={<Wardrobe />} />
+              <Route path="wardrobe/upload" element={<WardrobeUpload />} />
               <Route path="recommend" element={<Recommend />} />
               <Route path="outfits" element={<Outfits />} />
               <Route path="analytics" element={<Analytics />} />
@@ -79,11 +83,12 @@ const App = () => (
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </AuthProvider>
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </AuthProvider>
+  </ErrorBoundary>
 );
 
 export default App;

@@ -1,104 +1,105 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Sparkles, BookmarkCheck, Share2 } from "lucide-react";
-
-const savedOutfits = [
-  {
-    title: "Investor Lunch",
-    mood: "Calm confidence",
-    tags: ["Navy", "Honey knit", "Loafers"],
-    image: "/wardrobe/linen-set.jpg",
-  },
-  {
-    title: "Studio Sprint",
-    mood: "Functional",
-    tags: ["Utility shirt", "Graphic tee", "Sneakers"],
-    image: "/wardrobe/utility-shirt.jpg",
-  },
-  {
-    title: "Evening Gala",
-    mood: "Statement",
-    tags: ["Silk camisole", "Tailored trousers", "Metallic heels"],
-    image: "/wardrobe/honey-knit.jpg",
-  },
-];
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sparkles, Share2 } from "lucide-react";
+import { OutfitCard } from "@/components/outfit/OutfitCard";
+import { OutfitDetailModal } from "@/components/outfit/OutfitDetailModal";
+import { useOutfitGeneration } from "@/hooks/useOutfitGeneration";
+import { useFeedback } from "@/hooks/useFeedback";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Outfit, FeedbackType } from "@/types/outfit";
 
 const Outfits = () => {
+  const navigate = useNavigate();
+  const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null);
+  const { savedOutfits, isLoadingSaved, unsaveOutfit } = useOutfitGeneration();
+  const { submitFeedback } = useFeedback();
+
+  const handleOutfitClick = (outfit: Outfit) => {
+    setSelectedOutfit(outfit);
+  };
+
+  const handleFeedback = (feedbackType: FeedbackType) => {
+    if (selectedOutfit) {
+      submitFeedback({
+        outfitId: selectedOutfit.id,
+        feedbackType,
+      });
+    }
+  };
+
+  const handleSwap = () => {
+    // TODO: Implement swap functionality
+    console.log("Swap item in outfit");
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold text-foreground">Saved outfits & lookbook</h1>
+          <h1 className="text-3xl font-semibold text-foreground">Saved Outfits & Lookbook</h1>
           <p className="text-muted-foreground mt-2">
             Review what WardrobeWiz has generated so far. Pin favorites, share with friends, or refine a look.
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="hero">
+          <Button onClick={() => navigate("/dashboard/recommend")}>
             <Sparkles className="h-4 w-4 mr-2" />
-            Generate new look
+            Generate New Look
           </Button>
           <Button variant="secondary">
             <Share2 className="h-4 w-4 mr-2" />
-            Share board
+            Share Board
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {savedOutfits.map((outfit) => (
-          <Card key={outfit.title} className="shadow-card overflow-hidden">
-            <div className="aspect-[4/3]">
-              <img src={outfit.image} alt={outfit.title} className="h-full w-full object-cover" />
-            </div>
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">{outfit.mood}</p>
-                  <h3 className="text-lg font-semibold text-foreground">{outfit.title}</h3>
-                </div>
-                <Button variant="ghost" size="icon">
-                  <BookmarkCheck className="h-5 w-5" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {outfit.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {isLoadingSaved ? (
+        <div className="grid gap-6 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <Skeleton className="aspect-[4/3] w-full" />
+              <CardContent className="p-4 space-y-3">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : savedOutfits.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground text-lg mb-2">No saved outfits yet</p>
+            <p className="text-muted-foreground text-sm mb-4">
+              Generate your first outfit recommendation to get started
+            </p>
+            <Button onClick={() => navigate("/dashboard/recommend")}>
+              <Sparkles className="h-4 w-4 mr-2" />
+              Generate Outfit
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-3">
+          {savedOutfits.map((outfit) => (
+            <OutfitCard
+              key={outfit.id}
+              outfit={outfit}
+              showExplanation={false}
+              onSelect={handleOutfitClick}
+            />
+          ))}
+        </div>
+      )}
 
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Lookbook tabs</CardTitle>
-          <CardDescription>Drag-and-drop interactions will come later; for now preview the tab structure.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="day" className="space-y-4">
-            <TabsList className="justify-start overflow-x-auto">
-              <TabsTrigger value="day">Daytime</TabsTrigger>
-              <TabsTrigger value="night">Evening</TabsTrigger>
-              <TabsTrigger value="weekend">Weekend</TabsTrigger>
-            </TabsList>
-            <TabsContent value="day" className="text-sm text-muted-foreground">
-              Breezy commutes, client coffee chats, and hybrid workdays—WardrobeWiz proposes looks that stay comfortable yet polished.
-            </TabsContent>
-            <TabsContent value="night" className="text-sm text-muted-foreground">
-              Statement accessories, elevated fabrics, and confident silhouettes for dinners or galas.
-            </TabsContent>
-            <TabsContent value="weekend" className="text-sm text-muted-foreground">
-              Lean into textures and relaxed fits. Mix the utility shirt with denim or layer the honey knit over shorts for coastal walks.
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+      <OutfitDetailModal
+        outfit={selectedOutfit}
+        open={!!selectedOutfit}
+        onOpenChange={(open) => !open && setSelectedOutfit(null)}
+        onFeedback={handleFeedback}
+        onSwap={handleSwap}
+      />
     </div>
   );
 };

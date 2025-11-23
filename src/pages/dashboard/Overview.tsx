@@ -5,13 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UploadCloud, MessageSquare, Sparkles, ShoppingBag, Ruler, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const stats = [
-  { title: "Closet items", value: "127", description: "Digitized pieces ready to mix" },
-  { title: "Looks generated", value: "43", description: "Personalized outfit ideas" },
-  { title: "Favorites saved", value: "18", description: "Pinned combinations" },
-  { title: "Rewear boost", value: "42%", description: "More rotation vs. baseline" },
-];
+import { useWardrobe } from "@/hooks/useWardrobe";
+import { useOutfitGeneration } from "@/hooks/useOutfitGeneration";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const wardrobeInspo = [
   {
@@ -44,8 +40,11 @@ const defaultProfile = {
 };
 
 const Overview = () => {
+  const { items, stats, isLoading: isLoadingWardrobe } = useWardrobe();
+  const { savedOutfits, isLoadingSaved } = useOutfitGeneration();
+  
   const [messages, setMessages] = useState([
-    { role: "bot", content: "Hi! Ask me anything about your closet or share a vibe you're going for." },
+    { role: "bot" as const, content: "Hi! Ask me anything about your closet or share a vibe you're going for." },
   ]);
   const [chatInput, setChatInput] = useState("");
   const [uploadedItems, setUploadedItems] = useState<{ name: string; size: string }[]>([]);
@@ -55,6 +54,14 @@ const Overview = () => {
     "Navy chore coat + breathable oxford + tapered chinos",
     "Lightweight blazer + knit tee + loafers",
   ]);
+
+  // Use real data when available, fallback to mock
+  const displayStats = [
+    { title: "Closet items", value: stats?.totalItems?.toString() || items.length.toString() || "0", description: "Digitized pieces ready to mix" },
+    { title: "Looks generated", value: savedOutfits.length.toString() || "0", description: "Personalized outfit ideas" },
+    { title: "Favorites saved", value: savedOutfits.filter(o => o.isFavorite).length.toString() || "0", description: "Pinned combinations" },
+    { title: "Rewear boost", value: stats?.rewearRate ? `${Math.round(stats.rewearRate * 100)}%` : "0%", description: "More rotation vs. baseline" },
+  ];
 
   const handleChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,17 +110,31 @@ const Overview = () => {
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="shadow-card hover:shadow-card-hover transition-shadow">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-semibold text-foreground">{stat.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
-            </CardContent>
-          </Card>
-        ))}
+        {isLoadingWardrobe ? (
+          [...Array(4)].map((_, i) => (
+            <Card key={i} className="shadow-card">
+              <CardHeader className="pb-2">
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-3 w-32" />
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          displayStats.map((stat) => (
+            <Card key={stat.title} className="shadow-card hover:shadow-card-hover transition-shadow">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-semibold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
